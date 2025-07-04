@@ -27,9 +27,22 @@ public with sharing class NextStepFuture {
      * Opportunity Next Step field is a standard field
      * Update the corresponding test class AsynchronousTest and test method nextStepFuture_testUpdateAllNextStep to cover test this method
      */
-    //[public | private ] [static] data_type method_name (input parameters) {
+    @future
+    public static void updateAllNextStep() {
     //  The body of the method
-    //}
+        List<Account> updatedAccounts = new List<Account>();
+        List<Opportunity> updatedOpps = new List<Opportunity>();
+        for (Account acc : [SELECT Id, Next_Step__c FROM Account]) {
+            acc.Next_Step__c = 'Meeting in the future';
+            updatedAccounts.add(acc);
+        }
+        for (Opportunity opp : [SELECT Id, NextStep FROM Opportunity]) {
+            opp.NextStep = 'Meeting in the future';
+            updatedOpps.add(opp);
+        } 
+        update updatedAccounts;
+        update updatedOpps;
+    }
 
     /*
     * Question 2
@@ -43,7 +56,7 @@ public with sharing class NextStepFuture {
         insertBigDeal(bigDeal);
 
         UserRole[] roles = [SELECT Id, Name FROM UserRole WHERE Id = :UserInfo.getUserRoleId() OR Name = 'CRO' LIMIT 1];
-        updateUserRoleName(roles);
+        updateUserRoleName(JSON.serialize(roles));
     }
 
     // Helper method to insert big deal
@@ -58,7 +71,9 @@ public with sharing class NextStepFuture {
 
 
     // Helper method to update role name
-    private static void updateUserRoleName(UserRole[] roles){
+    @future
+    private static void updateUserRoleName(String userRoles){
+        UserRole[] roles = (List<UserRole>) JSON.deserialize(userRoles, List<UserRole>.class);
         UserRole role;
         if (roles.isEmpty()) {
             role = new UserRole();
